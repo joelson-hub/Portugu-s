@@ -97,14 +97,14 @@
             text-decoration: underline;
         }
         .table-of-contents {
-            position: sticky;
-            top: 2rem;
-            left: 0;
+            /* Posição padrão para mobile (não-sticky) */
+            position: relative; /* ou static */
+            width: 100%;
+            margin-bottom: 2rem;
             background-color: white;
             padding: 1.5rem;
             border-radius: 0.75rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
         }
         .table-of-contents h3 {
             font-size: 1.5rem;
@@ -139,7 +139,7 @@
             padding-top: 1rem;
             border-top: 1px solid #cbd5e1;
         }
-        /* Responsividade */
+        /* Responsividade para desktop */
         @media (min-width: 1024px) {
             .grid-layout {
                 display: grid;
@@ -147,7 +147,10 @@
                 gap: 2rem;
             }
             .table-of-contents {
+                position: sticky; /* Sticky apenas em desktop */
+                top: 2rem; /* Distância do topo */
                 align-self: start; /* Alinha o sumário ao topo */
+                width: auto; /* Deixa a largura ser controlada pelo grid */
             }
         }
         /* Estilo para expandir/recolher dicas */
@@ -355,7 +358,7 @@
                     <li><strong>Ditongo</strong>: Uma vogal e uma semivogal na mesma sílaba.
                         <ul>
                             <li>Exemplo: Poeira (PO – EI – RA).</li>
-                            <li>Não se acentuam os ditongos abertos -ei e -oi nas palavras paroxítonas. Exemplos: Assembleia, ideia e coreia.</li>
+                            <li>Não se acentua os ditongos abertos -ei e -oi nas palavras paroxítonas. Exemplos: Assembleia, ideia e coreia.</li>
                         </ul>
                     </li>
                 </ul>
@@ -889,7 +892,7 @@
                     </li>
                     <li><strong>SE HOUVER FUSÃO ENTRE A PREPOSIÇÃO “A” E UM PRONOME DEMONSTRATIVO INICIADO PELA LETRA “A”</strong> (aquele, aquela…):
                         <ul>
-                            <li>Ex: Preferia isso **ÀQUELA** blusa. Voltou **ÀQUEL**e lugar.</li>
+                            <li>Ex: Preferia isso **ÀQUELA** blusa. Voltou **ÀQUELE** lugar.</li>
                         </ul>
                     </li>
                 </ul>
@@ -1199,9 +1202,16 @@
             document.querySelectorAll('.table-of-contents a').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    // Obtém o elemento alvo
+                    const targetElement = document.querySelector(this.getAttribute('href'));
+                    if (targetElement) {
+                        // Calcula a posição de scroll, ajustando para qualquer cabeçalho fixo ou sticky
+                        // Como o sumário não é sticky em mobile, basta scrollIntoView
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start' // Garante que o topo do elemento fique visível
+                        });
+                    }
                 });
             });
 
