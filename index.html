@@ -181,7 +181,7 @@
             color: #1e3a8a; /* Darker blue text */
             border-radius: 0.5rem;
         }
-        .textarea-reviewer {
+        .textarea-reviewer, .textarea-concept {
             width: 100%;
             min-height: 150px;
             padding: 0.75rem;
@@ -191,7 +191,7 @@
             line-height: 1.5;
             resize: vertical;
         }
-        .button-reviewer {
+        .button-reviewer, .button-concept-explorer {
             background-color: #4f46e5;
             color: white;
             padding: 0.75rem 1.5rem;
@@ -203,7 +203,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        .button-reviewer:hover {
+        .button-reviewer:hover, .button-concept-explorer:hover {
             background-color: #4338ca;
         }
         .loading-indicator {
@@ -321,6 +321,7 @@
                     </ul>
                 </li>
                 <li><a href="#revisor-texto">13. Ferramenta: Revisor de Texto ✨</a></li>
+                <li><a href="#explorador-conceitos">14. Ferramenta: Explorador de Conceitos ✨</a></li>
             </ul>
         </aside>
 
@@ -540,7 +541,7 @@
                 <div id="classificacao-verbos" class="subsection-title">4.1. Classificação dos Verbos</div>
                 <ul>
                     <li>Quando o verbo indica um ESTADO, ele é verbo de ligação.</li>
-                    <li>When the verb indicates an ACTION, it is a transitive or intransitive verb.</li>
+                    <li>Quando o verbo indica uma AÇÃO, ele é verbo transitivo ou intransitivo.</li>
                     <li><strong>Verbo transitivo</strong>: PEDE complemento.
                         <ul>
                             <li><strong>Verbo transitivo direto</strong>: NÃO pede preposição. Ex: João comeu o bolo.</li>
@@ -888,7 +889,7 @@
                     </li>
                     <li><strong>SE HOUVER FUSÃO ENTRE A PREPOSIÇÃO “A” E UM PRONOME DEMONSTRATIVO INICIADO PELA LETRA “A”</strong> (aquele, aquela…):
                         <ul>
-                            <li>Ex: Preferia isso **ÀQUELA** blusa. Voltou **ÀQUELE** lugar.</li>
+                            <li>Ex: Preferia isso **ÀQUELA** blusa. Voltou **ÀQUEL**e lugar.</li>
                         </ul>
                     </li>
                 </ul>
@@ -1148,4 +1149,190 @@
 
                 <div class="mb-4">
                     <label for="text-input" class="block text-gray-700 text-sm font-bold mb-2">Insira o seu texto aqui:</label>
-                    <textarea id="text-input" class="texta
+                    <textarea id="text-input" class="textarea-reviewer" placeholder="Ex: Eu vai para casa agora."></textarea>
+                </div>
+
+                <button id="review-button" class="button-reviewer">
+                    Rever Texto com Gemini ✨
+                </button>
+
+                <div id="loading-indicator" class="loading-indicator">
+                    A rever... por favor, aguarde.
+                </div>
+
+                <div id="response-area" class="response-area mt-4" style="display:none;">
+                    <h3 class="font-semibold text-lg mb-2">Texto Revisado:</h3>
+                    <p id="reviewed-text"></p>
+                </div>
+            </section>
+
+            <!-- Nova seção do Explorador de Conceitos com Gemini API -->
+            <section id="explorador-conceitos" class="card">
+                <h2 class="chapter-title">14. Ferramenta: Explorador de Conceitos ✨</h2>
+                <p class="mb-4">Tem dúvidas sobre algum conceito gramatical? Insira-o abaixo e obtenha uma explicação detalhada e exemplos, gerados pela inteligência artificial do Gemini.</p>
+
+                <div class="mb-4">
+                    <label for="concept-input" class="block text-gray-700 text-sm font-bold mb-2">Insira o conceito gramatical (ex: "Metáfora", "Regência Verbal"):</label>
+                    <input type="text" id="concept-input" class="textarea-concept py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ex: Pronome Relativo">
+                </div>
+
+                <button id="explore-concept-button" class="button-concept-explorer">
+                    Explorar Conceito com Gemini ✨
+                </button>
+
+                <div id="concept-loading-indicator" class="loading-indicator">
+                    A explorar... por favor, aguarde.
+                </div>
+
+                <div id="concept-response-area" class="response-area mt-4" style="display:none;">
+                    <h3 class="font-semibold text-lg mb-2">Explicação e Exemplos:</h3>
+                    <p id="concept-explanation"></p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Smooth scroll for table of contents
+            document.querySelectorAll('.table-of-contents a').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Collapsible sections for tips/macetes
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    header.classList.toggle('active');
+                    if (content.style.display === 'block') {
+                        content.style.display = 'none';
+                    } else {
+                        content.style.display = 'block';
+                    }
+                });
+            });
+
+            // Gemini API integration for Text Reviewer
+            const textInput = document.getElementById('text-input');
+            const reviewButton = document.getElementById('review-button');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const responseArea = document.getElementById('response-area');
+            const reviewedText = document.getElementById('reviewed-text');
+
+            reviewButton.addEventListener('click', async () => {
+                const inputText = textInput.value.trim();
+
+                if (inputText === '') {
+                    alert('Por favor, insira um texto para rever.');
+                    return;
+                }
+
+                loadingIndicator.style.display = 'block';
+                responseArea.style.display = 'none';
+                reviewedText.textContent = '';
+
+                try {
+                    // Prompt para o LLM
+                    const prompt = `Revise o seguinte texto em português de Portugal para corrigir erros gramaticais, melhorar a clareza e a fluidez. Retorne apenas o texto revisado.:\n\n"${inputText}"`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // A chave da API será fornecida em tempo de execução
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        reviewedText.textContent = text;
+                        responseArea.style.display = 'block';
+                    } else {
+                        reviewedText.textContent = 'Não foi possível obter uma revisão. Tente novamente mais tarde.';
+                        responseArea.style.display = 'block';
+                        console.error('Estrutura de resposta inesperada:', result);
+                    }
+                } catch (error) {
+                    reviewedText.textContent = 'Ocorreu um erro ao rever o texto. Verifique a sua ligação à internet ou tente novamente.';
+                    responseArea.style.display = 'block';
+                    console.error('Erro na chamada da API Gemini:', error);
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                }
+            });
+
+            // Gemini API integration for Concept Explorer
+            const conceptInput = document.getElementById('concept-input');
+            const exploreConceptButton = document.getElementById('explore-concept-button');
+            const conceptLoadingIndicator = document.getElementById('concept-loading-indicator');
+            const conceptResponseArea = document.getElementById('concept-response-area');
+            const conceptExplanation = document.getElementById('concept-explanation');
+
+            exploreConceptButton.addEventListener('click', async () => {
+                const inputConcept = conceptInput.value.trim();
+
+                if (inputConcept === '') {
+                    alert('Por favor, insira um conceito gramatical para explorar.');
+                    return;
+                }
+
+                conceptLoadingIndicator.style.display = 'block';
+                conceptResponseArea.style.display = 'none';
+                conceptExplanation.textContent = '';
+
+                try {
+                    const prompt = `Forneça uma explicação clara e concisa sobre o conceito gramatical "${inputConcept}" em português de Portugal. Inclua pelo menos dois exemplos práticos para ilustrar o conceito. Formate a resposta de forma que a explicação e os exemplos sejam facilmente distinguíveis.`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // A chave da API será fornecida em tempo de execução
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        conceptExplanation.innerHTML = text.replace(/\n/g, '<br>'); // Replace newlines with <br> for HTML display
+                        conceptResponseArea.style.display = 'block';
+                    } else {
+                        conceptExplanation.textContent = 'Não foi possível obter uma explicação para este conceito. Tente novamente mais tarde.';
+                        conceptResponseArea.style.display = 'block';
+                        console.error('Estrutura de resposta inesperada:', result);
+                    }
+                } catch (error) {
+                    conceptExplanation.textContent = 'Ocorreu um erro ao explorar o conceito. Verifique a sua ligação à internet ou tente novamente.';
+                    conceptResponseArea.style.display = 'block';
+                    console.error('Erro na chamada da API Gemini:', error);
+                } finally {
+                    conceptLoadingIndicator.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
