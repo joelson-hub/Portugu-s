@@ -424,7 +424,7 @@
 
                 <div id="emprego-hifen" class="subsection-title">2.4. Emprego do Hífen</div>
                 <ul>
-                    <li><strong>MAL + vogal ou H/L</strong>: terá hífen. Ex: mal-acabado, mal-humorado. Nos demais casos, escreve-se sem hífen. Ex: malsucedido, malcriado.</li>
+                    <li><strong>MAL + vogal ou H/L</strong>: terá hífen. Ex: mal-acabado, mal-humorado. Nos demais casos, escreve-se sem hífen, Ex: malsucedido, malcriado.</li>
                     <li>O advérbio <strong>BEM</strong> acompanha-se de hífen quando o segundo elemento composto começa por vogal. Ex.: bem-acabado, bem-aventurado, bem-educado.</li>
                     <li><span class="macete"><strong>Macete:</strong> Sempre exigirão hífen: Além, aquém, ex, Vice.</span></li>
                 </ul>
@@ -540,7 +540,7 @@
                 <div id="classificacao-verbos" class="subsection-title">4.1. Classificação dos Verbos</div>
                 <ul>
                     <li>Quando o verbo indica um ESTADO, ele é verbo de ligação.</li>
-                    <li>Quando o verbo indica uma AÇÃO, ele é verbo transitivo ou intransitivo.</li>
+                    <li>When the verb indicates an ACTION, it is a transitive or intransitive verb.</li>
                     <li><strong>Verbo transitivo</strong>: PEDE complemento.
                         <ul>
                             <li><strong>Verbo transitivo direto</strong>: NÃO pede preposição. Ex: João comeu o bolo.</li>
@@ -823,7 +823,7 @@
                     </li>
                     <li><strong>ANTES DE ARTIGOS INDEFINIDOS</strong> (um, uma, uns, umas):
                         <ul>
-                            <li>Ex: Referiu-se **a uma** decisão da banca. Era favorável **a uma** atitude mais severa.</li>
+                            <li>Ex: Referiu-se a uma decisão da banca. Era favorável a uma atitude mais severa.</li>
                         </ul>
                     </li>
                     <li><strong>ENTRE PALAVRAS REPETIDAS</strong>:
@@ -1148,109 +1148,4 @@
 
                 <div class="mb-4">
                     <label for="text-input" class="block text-gray-700 text-sm font-bold mb-2">Insira o seu texto aqui:</label>
-                    <textarea id="text-input" class="textarea-reviewer" placeholder="Ex: Eu vai para casa agora."></textarea>
-                </div>
-
-                <button id="review-button" class="button-reviewer">
-                    Rever Texto com Gemini ✨
-                </button>
-
-                <div id="loading-indicator" class="loading-indicator">
-                    A rever... por favor, aguarde.
-                </div>
-
-                <div id="response-area" class="response-area mt-4" style="display:none;">
-                    <h3 class="font-semibold text-lg mb-2">Texto Revisado:</h3>
-                    <p id="reviewed-text"></p>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Smooth scroll for table of contents
-            document.querySelectorAll('.table-of-contents a').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                });
-            });
-
-            // Collapsible sections for tips/macetes
-            document.querySelectorAll('.collapsible-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const content = header.nextElementSibling;
-                    header.classList.toggle('active');
-                    if (content.style.display === 'block') {
-                        content.style.display = 'none';
-                    } else {
-                        content.style.display = 'block';
-                    }
-                });
-            });
-
-            // Gemini API integration for Text Reviewer
-            const textInput = document.getElementById('text-input');
-            const reviewButton = document.getElementById('review-button');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const responseArea = document.getElementById('response-area');
-            const reviewedText = document.getElementById('reviewed-text');
-
-            reviewButton.addEventListener('click', async () => {
-                const inputText = textInput.value.trim();
-
-                if (inputText === '') {
-                    alert('Por favor, insira um texto para rever.');
-                    return;
-                }
-
-                loadingIndicator.style.display = 'block';
-                responseArea.style.display = 'none';
-                reviewedText.textContent = '';
-
-                try {
-                    // Prompt para o LLM
-                    const prompt = `Revise o seguinte texto em português de Portugal para corrigir erros gramaticais, melhorar a clareza e a fluidez. Retorne apenas o texto revisado.:\n\n"${inputText}"`;
-
-                    let chatHistory = [];
-                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-
-                    const payload = { contents: chatHistory };
-                    const apiKey = ""; // A chave da API será fornecida em tempo de execução
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        reviewedText.textContent = text;
-                        responseArea.style.display = 'block';
-                    } else {
-                        reviewedText.textContent = 'Não foi possível obter uma revisão. Tente novamente mais tarde.';
-                        responseArea.style.display = 'block';
-                        console.error('Estrutura de resposta inesperada:', result);
-                    }
-                } catch (error) {
-                    reviewedText.textContent = 'Ocorreu um erro ao rever o texto. Verifique a sua ligação à internet ou tente novamente.';
-                    responseArea.style.display = 'block';
-                    console.error('Erro na chamada da API Gemini:', error);
-                } finally {
-                    loadingIndicator.style.display = 'none';
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+                    <textarea id="text-input" class="texta
