@@ -1245,7 +1245,7 @@
 
                 loadingIndicator.style.display = 'block';
                 responseArea.style.display = 'none';
-                reviewedText.textContent = '';
+                reviewedText.textContent = ''; // Limpa o texto revisado anterior
 
                 try {
                     // Prompt para o LLM
@@ -1265,6 +1265,7 @@
                     });
 
                     const result = await response.json();
+                    console.log('Resposta completa do Gemini para o Revisor:', result); // Log para depuração
 
                     if (result.candidates && result.candidates.length > 0 &&
                         result.candidates[0].content && result.candidates[0].content.parts &&
@@ -1273,14 +1274,20 @@
                         reviewedText.textContent = text;
                         responseArea.style.display = 'block';
                     } else {
-                        reviewedText.textContent = 'Não foi possível obter uma revisão. Tente novamente mais tarde.';
+                        // Se a estrutura esperada não for encontrada, verificar por promptFeedback (filtros de segurança)
+                        if (result.promptFeedback && result.promptFeedback.safetyRatings && result.promptFeedback.safetyRatings.length > 0) {
+                            const blockedReason = result.promptFeedback.safetyRatings.map(rating => `${rating.category}: ${rating.probability}`).join(', ');
+                            reviewedText.textContent = `A revisão não pôde ser gerada devido a filtros de segurança. Razões: ${blockedReason}`;
+                        } else {
+                            reviewedText.textContent = 'Não foi possível obter uma revisão. A estrutura da resposta da API Gemini foi inesperada.';
+                        }
                         responseArea.style.display = 'block';
-                        console.error('Estrutura de resposta inesperada:', result);
+                        console.error('Estrutura de resposta inesperada do Gemini para o Revisor:', result);
                     }
                 } catch (error) {
-                    reviewedText.textContent = 'Ocorreu um erro ao rever o texto. Verifique a sua ligação à internet ou tente novamente.';
+                    reviewedText.textContent = 'Ocorreu um erro ao rever o texto. Verifique a sua ligação à internet ou tente novamente. Detalhes do erro na consola.';
                     responseArea.style.display = 'block';
-                    console.error('Erro na chamada da API Gemini:', error);
+                    console.error('Erro na chamada da API Gemini para o Revisor:', error);
                 } finally {
                     loadingIndicator.style.display = 'none';
                 }
@@ -1322,6 +1329,7 @@
                     });
 
                     const result = await response.json();
+                    console.log('Resposta completa do Gemini para o Explorador:', result); // Log para depuração
 
                     if (result.candidates && result.candidates.length > 0 &&
                         result.candidates[0].content && result.candidates[0].content.parts &&
@@ -1330,14 +1338,20 @@
                         conceptExplanation.innerHTML = text.replace(/\n/g, '<br>'); // Replace newlines with <br> for HTML display
                         conceptResponseArea.style.display = 'block';
                     } else {
-                        conceptExplanation.textContent = 'Não foi possível obter uma explicação para este conceito. Tente novamente mais tarde.';
+                        // Se a estrutura esperada não for encontrada, verificar por promptFeedback (filtros de segurança)
+                        if (result.promptFeedback && result.promptFeedback.safetyRatings && result.promptFeedback.safetyRatings.length > 0) {
+                            const blockedReason = result.promptFeedback.safetyRatings.map(rating => `${rating.category}: ${rating.probability}`).join(', ');
+                            conceptExplanation.textContent = `A explicação não pôde ser gerada devido a filtros de segurança. Razões: ${blockedReason}`;
+                        } else {
+                            conceptExplanation.textContent = 'Não foi possível obter uma explicação para este conceito. A estrutura da resposta da API Gemini foi inesperada.';
+                        }
                         conceptResponseArea.style.display = 'block';
-                        console.error('Estrutura de resposta inesperada:', result);
+                        console.error('Estrutura de resposta inesperada do Gemini para o Explorador:', result);
                     }
                 } catch (error) {
-                    conceptExplanation.textContent = 'Ocorreu um erro ao explorar o conceito. Verifique a sua ligação à internet ou tente novamente.';
+                    conceptExplanation.textContent = 'Ocorreu um erro ao explorar o conceito. Verifique a sua ligação à internet ou tente novamente. Detalhes do erro na consola.';
                     conceptResponseArea.style.display = 'block';
-                    console.error('Erro na chamada da API Gemini:', error);
+                    console.error('Erro na chamada da API Gemini para o Explorador:', error);
                 } finally {
                     conceptLoadingIndicator.style.display = 'none';
                 }
